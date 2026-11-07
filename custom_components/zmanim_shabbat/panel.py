@@ -15,6 +15,7 @@ from homeassistant.components.lovelace.dashboard import LovelaceConfig
 from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.json import json_bytes, json_fragment
+from homeassistant.helpers.translation import async_get_translations
 
 from .const import DASHBOARD_SECTIONS, DOMAIN
 from .coordinator import ZmanimConfigEntry
@@ -49,8 +50,16 @@ class GeneratedDashboard(LovelaceConfig):
         return json_fragment(json_bytes(self._generated).decode())
 
 
-def _config(hass: HomeAssistant, entry: ZmanimConfigEntry) -> dict[str, Any]:
-    """Build the config from this install's real entity IDs."""
+async def _config(hass: HomeAssistant, entry: ZmanimConfigEntry) -> dict[str, Any]:
+    """Build the config from this install's real entity IDs and language."""
+    translations = await async_get_translations(
+        hass, hass.config.language, "entity", [DOMAIN]
+    )
+    names = {
+        parts[-2]: name
+        for key, name in translations.items()
+        if (parts := key.split("."))[-1] == "name" and len(parts) == 6
+    }
     registry = er.async_get(hass)
     ids = {}
     for key, default in DEFAULT_IDS.items():
@@ -64,6 +73,7 @@ def _config(hass: HomeAssistant, entry: ZmanimConfigEntry) -> dict[str, Any]:
     )
     return build(
         ids,
+        names,
         {key for key in DASHBOARD_SECTIONS if entry.options.get(key, False)},
         hass.config.language,
         weather[0] if weather else None,
@@ -71,12 +81,11 @@ def _config(hass: HomeAssistant, entry: ZmanimConfigEntry) -> dict[str, Any]:
     )
 
 
-@callback
-def async_add_dashboard(
+async def async_add_dashboard(
     hass: HomeAssistant, entry: ZmanimConfigEntry
 ) -> CALLBACK_TYPE:
     """Add the dashboard, and return how to remove it."""
-    config = _config(hass, entry)
+    config = await _config(hass, entry)
     hass.data[LOVELACE_DATA].dashboards[URL_PATH] = GeneratedDashboard(hass, config)
     frontend.async_register_built_in_panel(
         hass,

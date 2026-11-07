@@ -35,7 +35,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ZmanimConfigEntry) -> bo
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     # v1.1 entries don't have this option until Configure is saved.
     if entry.options.get(CONF_DASHBOARD, False):
-        entry.async_on_unload(async_add_dashboard(hass, entry))
+        entry.async_on_unload(await async_add_dashboard(hass, entry))
     return True
 
 

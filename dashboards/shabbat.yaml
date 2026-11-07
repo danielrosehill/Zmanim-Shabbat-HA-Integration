@@ -14,16 +14,22 @@ views:
       clock_size: large
     - type: tile
       entity: sensor.zmanim_hebrew_date
+      name: Hebrew date
     - type: tile
       entity: binary_sensor.shabbat_and_yom_tov_in_effect
+      name: In effect
     - type: tile
       entity: sensor.shabbat_and_yom_tov_parasha
+      name: Parasha
     - type: tile
       entity: sensor.shabbat_and_yom_tov_holiday
+      name: Holiday
     - type: tile
       entity: binary_sensor.shabbat_and_yom_tov_erev_shabbat_or_yom_tov
+      name: Erev Shabbat or Yom Tov
     - type: tile
       entity: binary_sensor.shabbat_and_yom_tov_motzei_shabbat_or_yom_tov
+      name: Motzei Shabbat or Yom Tov
   - type: grid
     cards:
     - type: heading
@@ -32,12 +38,16 @@ views:
     - type: entities
       entities:
       - entity: sensor.shabbat_and_yom_tov_next_shabbat_start
+        name: Next Shabbat start
         format: datetime
       - entity: sensor.shabbat_and_yom_tov_next_shabbat_end
+        name: Next Shabbat end
         format: datetime
       - entity: sensor.shabbat_and_yom_tov_next_candle_lighting
+        name: Next candle lighting
         format: datetime
       - entity: sensor.shabbat_and_yom_tov_next_havdalah
+        name: Next havdalah
         format: datetime
   - type: grid
     cards:
@@ -47,28 +57,40 @@ views:
     - type: entities
       entities:
       - entity: sensor.zmanim_alot_hashachar
+        name: Alot HaShachar
         format: time
       - entity: sensor.zmanim_talit_and_tefillin
+        name: Talit and Tefillin
         format: time
       - entity: sensor.zmanim_netz_hachama
+        name: Netz HaChama
         format: time
       - entity: sensor.zmanim_sof_zman_shema
+        name: Sof Zman Shema
         format: time
       - entity: sensor.zmanim_sof_zman_tefilla
+        name: Sof Zman Tefilla
         format: time
       - entity: sensor.zmanim_chatzot
+        name: Chatzot
         format: time
       - entity: sensor.zmanim_mincha_gedola
+        name: Mincha Gedola
         format: time
       - entity: sensor.zmanim_mincha_ketana
+        name: Mincha Ketana
         format: time
       - entity: sensor.zmanim_plag_hamincha
+        name: Plag HaMincha
         format: time
       - entity: sensor.zmanim_shkia
+        name: Shkia
         format: time
       - entity: sensor.zmanim_tzeit_hakochavim
+        name: Tzeit HaKochavim
         format: time
       - entity: sensor.zmanim_chatzot_halayla
+        name: Chatzot HaLayla
         format: time
   - type: grid
     cards:
@@ -77,13 +99,17 @@ views:
       icon: mdi:calendar-star
     - type: tile
       entity: binary_sensor.shabbat_and_yom_tov_chol_hamoed
+      name: Chol HaMoed
     - type: tile
       entity: binary_sensor.shabbat_and_yom_tov_fast_day
+      name: Fast day
     - type: entities
       entities:
       - entity: sensor.shabbat_and_yom_tov_next_fast_start
+        name: Next fast start
         format: datetime
       - entity: sensor.shabbat_and_yom_tov_next_fast_end
+        name: Next fast end
         format: datetime
   - type: grid
     cards:

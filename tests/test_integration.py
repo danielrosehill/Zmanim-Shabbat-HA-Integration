@@ -1,6 +1,7 @@
 """Setup, entities, options and scheduled updates."""
 
 import datetime as dt
+import json
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -260,6 +261,8 @@ async def test_dashboard_uses_real_entities_and_goes_on_unload(
                 yield from entities(value)
 
     found = set(entities(response["result"]))
+    times = response["result"]["views"][0]["sections"][1]["cards"][1]["entities"]
+    assert times[0]["name"] == "Next Shabbat start"
     assert found == set(DEFAULT_IDS.values())
     assert all(hass.states.get(entity) is not None for entity in found)
     assert URL_PATH in hass.data["frontend_panels"]
@@ -282,17 +285,33 @@ async def test_no_dashboard_without_the_option(hass, jerusalem):
     assert URL_PATH not in hass.data[LOVELACE_DATA].dashboards
 
 
+def english_names():
+    entities = json.loads(
+        Path("custom_components/zmanim_shabbat/translations/en.json").read_text()
+    )["entity"]
+    return {
+        key: value["name"]
+        for platform in entities.values()
+        for key, value in platform.items()
+    }
+
+
 def test_sections_can_be_left_out():
-    config = build(DEFAULT_IDS, set())
+    config = build(DEFAULT_IDS, {}, set())
     assert len(config["views"][0]["sections"]) == 2
     # Asked for, but the entity isn't there.
-    config = build(DEFAULT_IDS, {"dashboard_weather", "dashboard_alerts"})
+    config = build(DEFAULT_IDS, {}, {"dashboard_weather", "dashboard_alerts"})
     assert len(config["views"][0]["sections"]) == 2
-    assert build(DEFAULT_IDS, set(), "he")["title"] == "שבת"
+    assert build(DEFAULT_IDS, {}, set(), "he")["title"] == "שבת"
 
 
 def test_yaml_copy_matches_the_generated_dashboard():
     expected = build(
-        DEFAULT_IDS, set(DASHBOARD_SECTIONS), "en", DEFAULT_WEATHER_ENTITY, ALERT_ENTITY
+        DEFAULT_IDS,
+        english_names(),
+        set(DASHBOARD_SECTIONS),
+        "en",
+        DEFAULT_WEATHER_ENTITY,
+        ALERT_ENTITY,
     )
     assert yaml_util.load_yaml_dict("dashboards/shabbat.yaml") == expected

@@ -58,29 +58,42 @@ def _section(title: str, icon: str, *cards: dict[str, Any]) -> dict[str, Any]:
     return {"type": "grid", "cards": [heading, *cards]}
 
 
-def _tile(entity: str) -> dict[str, Any]:
-    return {"type": "tile", "entity": entity}
+def _named(entity: str, name: str | None) -> dict[str, Any]:
+    """Name a card. Left alone, cards repeat the device name and get cut off."""
+    return {"entity": entity, "name": name} if name else {"entity": entity}
 
 
-def _times(ids: dict[str, str], keys: list[str], display: str) -> dict[str, Any]:
+def _times(
+    ids: dict[str, str], names: dict[str, str], keys: list[str], display: str
+) -> dict[str, Any]:
     """List times as clock times. A tile would show "in 3 hours"."""
     return {
         "type": "entities",
-        "entities": [{"entity": ids[key], "format": display} for key in keys],
+        "entities": [
+            _named(ids[key], names.get(key)) | {"format": display} for key in keys
+        ],
     }
 
 
 def build(
     ids: dict[str, str],
+    names: dict[str, str],
     sections: set[str],
     language: str = "en",
     weather: str | None = None,
     alert: str | None = None,
 ) -> dict[str, Any]:
-    """Return the dashboard config. sections holds the DASHBOARD_SECTIONS turned on."""
+    """Return the dashboard config.
+
+    names holds each entity's own name, and sections the DASHBOARD_SECTIONS turned on.
+    """
     text = HEADINGS.get(language, HEADINGS["en"])
+
+    def tile(key: str) -> dict[str, Any]:
+        return {"type": "tile"} | _named(ids[key], names.get(key))
+
     status = [
-        _tile(ids[key])
+        tile(key)
         for key in (
             "hebrew_date",
             "in_effect",
@@ -99,6 +112,7 @@ def build(
             "mdi:candle",
             _times(
                 ids,
+                names,
                 [
                     "next_shabbat_start",
                     "next_shabbat_end",
@@ -112,7 +126,7 @@ def build(
     if "dashboard_zmanim" in sections:
         cards.append(
             _section(
-                text["zmanim"], "mdi:weather-sunset", _times(ids, list(ZMANIM), "time")
+                text["zmanim"], "mdi:weather-sunset", _times(ids, names, list(ZMANIM), "time")
             )
         )
     if "dashboard_fasts" in sections:
@@ -120,9 +134,9 @@ def build(
             _section(
                 text["fasts"],
                 "mdi:calendar-star",
-                _tile(ids["chol_hamoed"]),
-                _tile(ids["fast_day"]),
-                _times(ids, ["next_fast_start", "next_fast_end"], "datetime"),
+                tile("chol_hamoed"),
+                tile("fast_day"),
+                _times(ids, names, ["next_fast_start", "next_fast_end"], "datetime"),
             )
         )
     if "dashboard_weather" in sections and weather:
@@ -138,7 +152,9 @@ def build(
             )
         )
     if "dashboard_alerts" in sections and alert:
-        cards.append(_section(text["alerts"], "mdi:alarm-light", _tile(alert)))
+        cards.append(
+            _section(text["alerts"], "mdi:alarm-light", {"type": "tile", "entity": alert})
+        )
     return {
         "title": TITLE.get(language, TITLE["en"]),
         "views": [{"type": "sections", "max_columns": 3, "sections": cards}],
