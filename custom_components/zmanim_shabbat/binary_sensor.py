@@ -19,6 +19,8 @@ async def async_setup_entry(
     async_add_entities(
         [
             InEffectSensor(entry, DEVICE_SHABBAT, "in_effect"),
+            ErevSensor(entry, DEVICE_SHABBAT, "erev_shabbat_yom_tov"),
+            MotzeiSensor(entry, DEVICE_SHABBAT, "motzei_shabbat_yom_tov"),
             CholHamoedSensor(entry, DEVICE_SHABBAT, "chol_hamoed"),
             FastDaySensor(entry, DEVICE_SHABBAT, "fast_day"),
         ]
@@ -37,6 +39,24 @@ class InEffectSensor(ZmanimShabbatEntity, BinarySensorEntity):
     def extra_state_attributes(self) -> dict[str, str]:
         """Say which it is, so announcements can name it."""
         return {"occasion": self.coordinator.data.occasion}
+
+
+class ErevSensor(ZmanimShabbatEntity, BinarySensorEntity):
+    """On during the day before Shabbat or Yom Tov, until candle lighting."""
+
+    @property
+    def is_on(self) -> bool:
+        """Return whether it is erev Shabbat or Yom Tov."""
+        return self.coordinator.data.erev
+
+
+class MotzeiSensor(ZmanimShabbatEntity, BinarySensorEntity):
+    """On from havdalah until midnight."""
+
+    @property
+    def is_on(self) -> bool:
+        """Return whether it is motzei Shabbat or Yom Tov."""
+        return self.coordinator.data.motzei
 
 
 class CholHamoedSensor(ZmanimShabbatEntity, BinarySensorEntity):

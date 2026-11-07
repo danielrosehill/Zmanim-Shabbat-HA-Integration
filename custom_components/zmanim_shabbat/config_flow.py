@@ -21,7 +21,9 @@ from homeassistant.helpers.selector import (
 from .calc import default_candle_lighting_minutes
 from .const import (
     CONF_CANDLE_LIGHTING_MINUTES,
+    CONF_DASHBOARD,
     CONF_DIASPORA,
+    DASHBOARD_SECTIONS,
     CONF_HAVDALAH_MINUTES,
     DEFAULT_HAVDALAH_MINUTES,
     DOMAIN,
@@ -47,6 +49,8 @@ def _schema(hass: HomeAssistant, current: dict[str, Any]) -> vol.Schema:
             hass.config.latitude, hass.config.longitude
         ),
         CONF_HAVDALAH_MINUTES: DEFAULT_HAVDALAH_MINUTES,
+        CONF_DASHBOARD: True,
+        **dict.fromkeys(DASHBOARD_SECTIONS, True),
     } | current
     return vol.Schema(
         {
@@ -58,6 +62,10 @@ def _schema(hass: HomeAssistant, current: dict[str, Any]) -> vol.Schema:
                 CONF_HAVDALAH_MINUTES, default=defaults[CONF_HAVDALAH_MINUTES]
             ): _minutes(120),
             vol.Required(CONF_DIASPORA, default=defaults[CONF_DIASPORA]): BooleanSelector(),
+            **{
+                vol.Required(key, default=defaults[key]): BooleanSelector()
+                for key in (CONF_DASHBOARD, *DASHBOARD_SECTIONS)
+            },
         }
     )
 

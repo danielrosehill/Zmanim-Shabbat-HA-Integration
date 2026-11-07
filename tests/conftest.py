@@ -9,6 +9,12 @@ OPTIONS = {
     "diaspora": False,
     "candle_lighting_minutes": 40,
     "havdalah_minutes": 0,
+    "dashboard": True,
+    "dashboard_clock": True,
+    "dashboard_zmanim": True,
+    "dashboard_fasts": True,
+    "dashboard_weather": True,
+    "dashboard_alerts": True,
 }
 
 

@@ -5,6 +5,10 @@
     "@danielrosehill"
   ],
   "config_flow": true,
+  "dependencies": [
+    "frontend",
+    "lovelace"
+  ],
   "documentation": "https://github.com/danielrosehill/Zmanim-Shabbat-HA-Integration",
   "integration_type": "service",
   "iot_class": "calculated",
@@ -16,5 +20,5 @@
     "hdate[astral]>=1.2.2,<2"
   ],
   "single_config_entry": true,
-  "version": "1.2"
+  "version": "1.3"
 }

@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
+from hdate.holidays import HOLIDAYS
 from hdate.parasha import Parasha
 
 from custom_components.zmanim_shabbat.calc import (
@@ -175,3 +176,52 @@ def test_hebrew_date_changes_at_sunset_and_formats_in_both_languages():
     assert format_hebrew_date(noon, "en") == "29 Cheshvan 5787"
     assert format_hebrew_date(noon, "he").endswith('בחשוון תשפ"ז')
     assert format_hebrew_date(noon, "fr") == "29 Cheshvan 5787"
+
+
+def test_next_shabbat_matches_candles_and_havdalah_in_an_ordinary_week():
+    week = snapshot(JERUSALEM, at(2026, 11, 10, 12))
+    assert week.next_shabbat_start == week.next_candle_lighting
+    assert week.next_shabbat_end == week.next_havdalah
+
+
+def test_next_shabbat_ignores_yom_tov_and_never_points_backwards():
+    # Monday of Yom Kippur week: the next candles are for Yom Kippur.
+    monday = snapshot(JERUSALEM, at(2026, 9, 14, 12))
+    assert monday.next_candle_lighting.date() == dt.date(2026, 9, 18)
+    # During Shabbat: this end, and next week's start.
+    shabbat = snapshot(JERUSALEM, at(2026, 11, 14, 12))
+    assert shabbat.next_shabbat_end.date() == dt.date(2026, 11, 14)
+    assert shabbat.next_shabbat_start.date() == dt.date(2026, 11, 20)
+    # Rosh Hashana on Shabbat and Sunday: Shabbat still ends on Saturday night.
+    assert snapshot(JERUSALEM, at(2026, 9, 12, 12)).next_shabbat_end.date() == dt.date(
+        2026, 9, 12
+    )
+    for days in range(0, 400, 1):
+        when = at(2026, 9, 1, 12) + dt.timedelta(days=days)
+        result = snapshot(JERUSALEM, when)
+        assert when < result.next_shabbat_start <= when + dt.timedelta(days=8)
+        assert when < result.next_shabbat_end <= when + dt.timedelta(days=8)
+
+
+def test_erev_and_motzei():
+    candles = snapshot(JERUSALEM, at(2026, 11, 13, 9)).next_candle_lighting
+    assert snapshot(JERUSALEM, at(2026, 11, 13, 9)).erev
+    assert not snapshot(JERUSALEM, candles).erev
+    assert not snapshot(JERUSALEM, at(2026, 11, 14, 12)).motzei
+    assert snapshot(JERUSALEM, at(2026, 11, 14, 22)).motzei
+
+
+def test_holiday_follows_the_evening():
+    assert snapshot(JERUSALEM, at(2026, 11, 9, 12)).holiday == "none"
+    assert snapshot(JERUSALEM, at(2026, 9, 25, 12)).holiday == "erev_sukkot"
+    assert snapshot(JERUSALEM, at(2026, 9, 25, 20)).holiday == "sukkot"
+    both = snapshot(JERUSALEM, at(2026, 10, 3, 12))
+    assert both.holidays == ["shmini_atzeret", "simchat_torah"]
+
+
+def test_every_holiday_has_a_name_in_both_languages():
+    root = Path("custom_components/zmanim_shabbat/translations")
+    for language in ("en", "he"):
+        names = json.loads((root / f"{language}.json").read_text())
+        states = names["entity"]["sensor"]["holiday"]["state"]
+        assert set(states) == {"none"} | {holiday.name for holiday in HOLIDAYS}

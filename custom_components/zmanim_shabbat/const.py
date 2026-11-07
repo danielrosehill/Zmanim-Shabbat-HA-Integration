@@ -5,6 +5,15 @@ DOMAIN = "zmanim_shabbat"
 CONF_DIASPORA = "diaspora"
 CONF_CANDLE_LIGHTING_MINUTES = "candle_lighting_minutes"
 CONF_HAVDALAH_MINUTES = "havdalah_minutes"
+CONF_DASHBOARD = "dashboard"
+# Sections of the dashboard that can be switched off.
+DASHBOARD_SECTIONS = (
+    "dashboard_clock",
+    "dashboard_zmanim",
+    "dashboard_fasts",
+    "dashboard_weather",
+    "dashboard_alerts",
+)
 
 DEFAULT_CANDLE_LIGHTING_MINUTES = 18
 JERUSALEM_CANDLE_LIGHTING_MINUTES = 40
@@ -49,9 +58,14 @@ MONTHS = {
 # Every entity besides the zmanim. sensor.py removes anything not listed here.
 SHABBAT_ENTITIES = (
     "in_effect",
+    "erev_shabbat_yom_tov",
+    "motzei_shabbat_yom_tov",
     "chol_hamoed",
     "fast_day",
     "parasha",
+    "holiday",
+    "next_shabbat_start",
+    "next_shabbat_end",
     "next_candle_lighting",
     "next_havdalah",
     "next_fast_start",

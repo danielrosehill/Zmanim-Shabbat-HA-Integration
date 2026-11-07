@@ -7,10 +7,12 @@ from homeassistant.util import dt as dt_util
 from .calc import Settings
 from .const import (
     CONF_CANDLE_LIGHTING_MINUTES,
+    CONF_DASHBOARD,
     CONF_DIASPORA,
     CONF_HAVDALAH_MINUTES,
 )
 from .coordinator import ZmanimConfigEntry, ZmanimCoordinator
+from .panel import async_add_dashboard
 
 PLATFORMS = [Platform.BINARY_SENSOR, Platform.SENSOR]
 
@@ -31,6 +33,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ZmanimConfigEntry) -> bo
     entry.async_on_unload(coordinator.async_stop)
     entry.runtime_data = coordinator
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    # v1.1 entries don't have this option until Configure is saved.
+    if entry.options.get(CONF_DASHBOARD, False):
+        entry.async_on_unload(async_add_dashboard(hass, entry))
     return True
 
 

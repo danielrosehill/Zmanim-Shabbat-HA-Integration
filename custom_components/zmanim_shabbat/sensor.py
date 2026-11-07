@@ -2,6 +2,7 @@
 
 import datetime as dt
 
+from hdate.holidays import HOLIDAYS
 from hdate.parasha import Parasha
 
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
@@ -36,6 +37,9 @@ async def async_setup_entry(
             *(ZmanSensor(entry, DEVICE_ZMANIM, key) for key in ZMANIM),
             HebrewDateSensor(entry, DEVICE_ZMANIM, HEBREW_DATE),
             ParashaSensor(entry, DEVICE_SHABBAT, "parasha"),
+            HolidaySensor(entry, DEVICE_SHABBAT, "holiday"),
+            NextShabbatStartSensor(entry, DEVICE_SHABBAT, "next_shabbat_start"),
+            NextShabbatEndSensor(entry, DEVICE_SHABBAT, "next_shabbat_end"),
             NextFastStartSensor(entry, DEVICE_SHABBAT, "next_fast_start"),
             NextFastEndSensor(entry, DEVICE_SHABBAT, "next_fast_end"),
             NextCandleLightingSensor(entry, DEVICE_SHABBAT, "next_candle_lighting"),
@@ -75,6 +79,24 @@ class NextHavdalahSensor(TimeSensor):
     def native_value(self) -> dt.datetime:
         """Return the time."""
         return self.coordinator.data.next_havdalah
+
+
+class NextShabbatStartSensor(TimeSensor):
+    """The next weekly Shabbat start still to come."""
+
+    @property
+    def native_value(self) -> dt.datetime:
+        """Return the time."""
+        return self.coordinator.data.next_shabbat_start
+
+
+class NextShabbatEndSensor(TimeSensor):
+    """The next weekly Shabbat end still to come."""
+
+    @property
+    def native_value(self) -> dt.datetime:
+        """Return the time."""
+        return self.coordinator.data.next_shabbat_end
 
 
 class NextFastStartSensor(TimeSensor):
@@ -122,3 +144,20 @@ class ParashaSensor(ZmanimShabbatEntity, SensorEntity):
     def native_value(self) -> str:
         """Return the portion for the coming Shabbat."""
         return self.coordinator.data.parasha
+
+
+class HolidaySensor(ZmanimShabbatEntity, SensorEntity):
+    """Today's holiday, named in translations/, which changes at sunset."""
+
+    _attr_device_class = SensorDeviceClass.ENUM
+    _attr_options = ["none", *sorted({holiday.name for holiday in HOLIDAYS})]
+
+    @property
+    def native_value(self) -> str:
+        """Return the first holiday today, or none."""
+        return self.coordinator.data.holiday
+
+    @property
+    def extra_state_attributes(self) -> dict[str, list[str]]:
+        """List them all, since some days have two, such as Chanukah and Rosh Chodesh."""
+        return {"all": self.coordinator.data.holidays}

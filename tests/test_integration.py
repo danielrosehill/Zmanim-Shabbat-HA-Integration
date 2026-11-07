@@ -7,16 +7,26 @@ from zoneinfo import ZoneInfo
 from freezegun.api import FrozenDateTimeFactory
 import pytest
 from pytest_homeassistant_custom_component.common import (
+    MockConfigEntry,
     async_fire_time_changed,
     async_mock_service,
 )
 
 from homeassistant import config_entries
+from homeassistant.components.lovelace.const import LOVELACE_DATA
 from homeassistant.data_entry_flow import FlowResultType
 from homeassistant.helpers import device_registry as dr, entity_registry as er
 from homeassistant.setup import async_setup_component
+from homeassistant.util import yaml as yaml_util
 
-from custom_components.zmanim_shabbat.const import DOMAIN
+from custom_components.zmanim_shabbat.const import DASHBOARD_SECTIONS, DOMAIN
+from custom_components.zmanim_shabbat.dashboard_config import (
+    ALERT_ENTITY,
+    DEFAULT_IDS,
+    DEFAULT_WEATHER_ENTITY,
+    build,
+)
+from custom_components.zmanim_shabbat.panel import URL_PATH
 
 from .conftest import OPTIONS
 
@@ -223,3 +233,66 @@ async def test_hebrew_date_rolls_over_at_sunset(
     await hass.async_block_till_done()
 
     assert hass.states.get("sensor.zmanim_hebrew_date").state != before
+
+
+async def lovelace(hass, ws, url_path):
+    client = await ws()
+    await client.send_json_auto_id({"type": "lovelace/config", "url_path": url_path})
+    return await client.receive_json()
+
+
+async def test_dashboard_uses_real_entities_and_goes_on_unload(
+    hass, jerusalem, entry, hass_ws_client
+):
+    await async_setup_component(hass, "lovelace", {})
+    await setup(hass, entry)
+    response = await lovelace(hass, hass_ws_client, URL_PATH)
+    assert response["success"]
+
+    def entities(node):
+        if isinstance(node, dict):
+            if isinstance(node.get("entity"), str):
+                yield node["entity"]
+            for value in node.values():
+                yield from entities(value)
+        elif isinstance(node, list):
+            for value in node:
+                yield from entities(value)
+
+    found = set(entities(response["result"]))
+    assert found == set(DEFAULT_IDS.values())
+    assert all(hass.states.get(entity) is not None for entity in found)
+    assert URL_PATH in hass.data["frontend_panels"]
+
+    await hass.config_entries.async_unload(entry.entry_id)
+    await hass.async_block_till_done()
+    assert URL_PATH not in hass.data[LOVELACE_DATA].dashboards
+    assert URL_PATH not in hass.data["frontend_panels"]
+
+
+async def test_no_dashboard_without_the_option(hass, jerusalem):
+    await async_setup_component(hass, "lovelace", {})
+    item = MockConfigEntry(
+        domain=DOMAIN,
+        options={"diaspora": False, "candle_lighting_minutes": 40, "havdalah_minutes": 0},
+    )
+    item.add_to_hass(hass)
+    await setup(hass, item)
+    assert item.state is config_entries.ConfigEntryState.LOADED
+    assert URL_PATH not in hass.data[LOVELACE_DATA].dashboards
+
+
+def test_sections_can_be_left_out():
+    config = build(DEFAULT_IDS, set())
+    assert len(config["views"][0]["sections"]) == 2
+    # Asked for, but the entity isn't there.
+    config = build(DEFAULT_IDS, {"dashboard_weather", "dashboard_alerts"})
+    assert len(config["views"][0]["sections"]) == 2
+    assert build(DEFAULT_IDS, set(), "he")["title"] == "שבת"
+
+
+def test_yaml_copy_matches_the_generated_dashboard():
+    expected = build(
+        DEFAULT_IDS, set(DASHBOARD_SECTIONS), "en", DEFAULT_WEATHER_ENTITY, ALERT_ENTITY
+    )
+    assert yaml_util.load_yaml_dict("dashboards/shabbat.yaml") == expected

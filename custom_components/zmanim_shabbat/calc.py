@@ -64,6 +64,12 @@ class Snapshot:
     hebrew_date: HebrewDate
     chol_hamoed: bool
     fast_day: bool
+    erev: bool
+    motzei: bool
+    holiday: str
+    holidays: list[str]
+    next_shabbat_start: dt.datetime
+    next_shabbat_end: dt.datetime
     next_candle_lighting: dt.datetime
     next_havdalah: dt.datetime
     next_fast_start: dt.datetime
@@ -144,6 +150,34 @@ def _fasts(
     return active, next_start, next_end
 
 
+def _next_shabbat(
+    settings: Settings, now: dt.datetime, today: dt.date
+) -> tuple[dt.datetime, dt.datetime]:
+    """Return the next weekly Shabbat start and end, ignoring any Yom Tov around it.
+
+    Worked out from sunset because hdate's candle_lighting and havdalah are empty
+    on some Fridays and Saturdays that join a Yom Tov.
+    """
+    start = end = None
+    for offset in range(-1, LOOKAHEAD_DAYS):
+        friday = today + dt.timedelta(days=offset)
+        if friday.weekday() != 4:
+            continue
+        sunset = _zmanim(settings, friday).zmanim["shkia"].local
+        this_start = sunset - dt.timedelta(minutes=settings.candle_lighting_minutes)
+        saturday = _zmanim(settings, friday + dt.timedelta(days=1)).zmanim
+        this_end = (
+            saturday["shkia"].local + dt.timedelta(minutes=settings.havdalah_minutes)
+            if settings.havdalah_minutes
+            else saturday["tset_hakohavim_shabbat"].local
+        )
+        start = start or (this_start if this_start > now else None)
+        end = end or (this_end if this_end > now else None)
+    if start is None or end is None:
+        raise ValueError(f"No Shabbat within {LOOKAHEAD_DAYS} days of {now}")
+    return start, end
+
+
 def _is_chol_hamoed(info: HDateInfo) -> bool:
     """Match by name: hdate types Hoshana Raba and the last day as erev Yom Tov."""
     return any(
@@ -181,7 +215,16 @@ def snapshot(settings: Settings, now: dt.datetime) -> Snapshot:
     fast_day, next_fast_start, next_fast_end = _fasts(settings, now, today)
     next_candle_lighting = _next(settings, now, today, "candle_lighting")
     next_havdalah = _next(settings, now, today, "havdalah")
-    changes = [next_candle_lighting, next_havdalah, next_fast_start, next_fast_end]
+    next_shabbat_start, next_shabbat_end = _next_shabbat(settings, now, today)
+    holidays = [holiday.name for holiday in evening_info.holidays]
+    changes = [
+        next_candle_lighting,
+        next_havdalah,
+        next_fast_start,
+        next_fast_end,
+        next_shabbat_start,
+        next_shabbat_end,
+    ]
     if sunset > now:
         changes.append(sunset)
     return Snapshot(
@@ -195,6 +238,12 @@ def snapshot(settings: Settings, now: dt.datetime) -> Snapshot:
         # Shabbat Chol HaMoed still counts. Yom Tov does not.
         chol_hamoed=_is_chol_hamoed(evening_info) and "yom_tov" not in occasion,
         fast_day=fast_day,
+        erev=day.erev_shabbat_chag(now),
+        motzei=day.motzei_shabbat_chag(now),
+        holiday=holidays[0] if holidays else "none",
+        holidays=holidays,
+        next_shabbat_start=next_shabbat_start,
+        next_shabbat_end=next_shabbat_end,
         next_candle_lighting=next_candle_lighting,
         next_havdalah=next_havdalah,
         next_fast_start=next_fast_start,

@@ -9,11 +9,19 @@
         "data": {
           "candle_lighting_minutes": "Candle lighting, minutes before sunset",
           "havdalah_minutes": "Havdalah, minutes after sunset",
-          "diaspora": "Outside Israel (two-day Yom Tov)"
+          "diaspora": "Outside Israel (two-day Yom Tov)",
+          "dashboard": "Add a Shabbat dashboard to the sidebar",
+          "dashboard_clock": "Dashboard: show a clock",
+          "dashboard_zmanim": "Dashboard: show today's zmanim",
+          "dashboard_fasts": "Dashboard: show fasts and Chol HaMoed",
+          "dashboard_weather": "Dashboard: show the weather forecast",
+          "dashboard_alerts": "Dashboard: show red alerts"
         },
         "data_description": {
           "candle_lighting_minutes": "Starts at 40 if your home is in the Jerusalem area, otherwise 18. Change it to follow your own custom.",
-          "havdalah_minutes": "0 uses three stars instead of a fixed offset."
+          "havdalah_minutes": "0 uses three stars instead of a fixed offset.",
+          "dashboard_weather": "Uses your first weather entity.",
+          "dashboard_alerts": "Needs the Oref Alert integration (binary_sensor.oref_alert)."
         }
       }
     }
@@ -25,11 +33,19 @@
         "data": {
           "candle_lighting_minutes": "Candle lighting, minutes before sunset",
           "havdalah_minutes": "Havdalah, minutes after sunset",
-          "diaspora": "Outside Israel (two-day Yom Tov)"
+          "diaspora": "Outside Israel (two-day Yom Tov)",
+          "dashboard": "Add a Shabbat dashboard to the sidebar",
+          "dashboard_clock": "Dashboard: show a clock",
+          "dashboard_zmanim": "Dashboard: show today's zmanim",
+          "dashboard_fasts": "Dashboard: show fasts and Chol HaMoed",
+          "dashboard_weather": "Dashboard: show the weather forecast",
+          "dashboard_alerts": "Dashboard: show red alerts"
         },
         "data_description": {
           "candle_lighting_minutes": "Starts at 40 if your home is in the Jerusalem area, otherwise 18. Change it to follow your own custom.",
-          "havdalah_minutes": "0 uses three stars instead of a fixed offset."
+          "havdalah_minutes": "0 uses three stars instead of a fixed offset.",
+          "dashboard_weather": "Uses your first weather entity.",
+          "dashboard_alerts": "Needs the Oref Alert integration (binary_sensor.oref_alert)."
         }
       }
     }
@@ -55,6 +71,12 @@
       },
       "fast_day": {
         "name": "Fast day"
+      },
+      "erev_shabbat_yom_tov": {
+        "name": "Erev Shabbat or Yom Tov"
+      },
+      "motzei_shabbat_yom_tov": {
+        "name": "Motzei Shabbat or Yom Tov"
       }
     },
     "sensor": {
@@ -175,6 +197,59 @@
       },
       "hebrew_date": {
         "name": "Hebrew date"
+      },
+      "holiday": {
+        "name": "Holiday",
+        "state": {
+          "erev_rosh_hashana": "Erev Rosh Hashana",
+          "rosh_hashana_i": "Rosh Hashana, first day",
+          "rosh_hashana_ii": "Rosh Hashana, second day",
+          "tzom_gedaliah": "Tzom Gedaliah",
+          "erev_yom_kippur": "Erev Yom Kippur",
+          "yom_kippur": "Yom Kippur",
+          "erev_sukkot": "Erev Sukkot",
+          "sukkot": "Sukkot",
+          "sukkot_ii": "Sukkot, second day",
+          "hol_hamoed_sukkot": "Chol HaMoed Sukkot",
+          "hoshana_raba": "Hoshana Raba",
+          "shmini_atzeret": "Shemini Atzeret",
+          "simchat_torah": "Simchat Torah",
+          "chanukah": "Chanukah",
+          "asara_btevet": "Asara B'Tevet",
+          "tu_bshvat": "Tu B'Shvat",
+          "taanit_esther": "Taanit Esther",
+          "purim": "Purim",
+          "shushan_purim": "Shushan Purim",
+          "erev_pesach": "Erev Pesach",
+          "pesach": "Pesach",
+          "pesach_ii": "Pesach, second day",
+          "hol_hamoed_pesach": "Chol HaMoed Pesach",
+          "pesach_vii": "Shvii Shel Pesach",
+          "pesach_viii": "Acharon Shel Pesach",
+          "yom_hashoah": "Yom HaShoah",
+          "yom_hazikaron": "Yom HaZikaron",
+          "yom_haatzmaut": "Yom Ha'atzmaut",
+          "lag_bomer": "Lag BaOmer",
+          "yom_yerushalayim": "Yom Yerushalayim",
+          "erev_shavuot": "Erev Shavuot",
+          "shavuot": "Shavuot",
+          "shavuot_ii": "Shavuot, second day",
+          "tzom_tammuz": "Shiva Asar BeTammuz",
+          "tisha_bav": "Tisha B'Av",
+          "tu_bav": "Tu B'Av",
+          "family_day": "Family Day",
+          "memorial_day_unknown": "Memorial Day for the Unknown Fallen",
+          "rabin_memorial_day": "Yitzhak Rabin Memorial Day",
+          "zeev_zhabotinsky_day": "Ze'ev Jabotinsky Day",
+          "rosh_chodesh": "Rosh Chodesh",
+          "none": "None"
+        }
+      },
+      "next_shabbat_start": {
+        "name": "Next Shabbat start"
+      },
+      "next_shabbat_end": {
+        "name": "Next Shabbat end"
       }
     }
   }
