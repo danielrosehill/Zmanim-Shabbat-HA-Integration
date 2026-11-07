@@ -34,6 +34,12 @@ async def test_config_flow(hass, jerusalem):
     assert result["options"] == OPTIONS
 
 
+async def test_uses_home_assistant_elevation(hass, jerusalem, entry):
+    hass.config.elevation = 123
+    await setup(hass, entry)
+    assert entry.runtime_data.settings.elevation == 123
+
+
 async def test_two_devices(hass, jerusalem, entry):
     await setup(hass, entry)
     devices = dr.async_entries_for_config_entry(dr.async_get(hass), entry.entry_id)

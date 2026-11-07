@@ -6,7 +6,7 @@ from zoneinfo import ZoneInfo
 from custom_components.zmanim_shabbat.calc import Settings, snapshot
 
 TZ = ZoneInfo("Asia/Jerusalem")
-JERUSALEM = Settings(31.778, 35.235, TZ, False, 40, 0)
+JERUSALEM = Settings(31.778, 35.235, 0, TZ, False, 40, 0)
 
 
 def at(*args):
@@ -17,7 +17,7 @@ def test_offset_moves_candle_lighting():
     friday = at(2026, 11, 13, 9)
     forty = snapshot(JERUSALEM, friday).next_candle_lighting
     eighteen = snapshot(
-        Settings(31.778, 35.235, TZ, False, 18, 0), friday
+        Settings(31.778, 35.235, 0, TZ, False, 18, 0), friday
     ).next_candle_lighting
     assert eighteen - forty == dt.timedelta(minutes=22)
 
@@ -57,6 +57,16 @@ def test_diaspora_second_day():
     # Sukkot 5787 is Saturday 26 September 2026. Sunday is Chol HaMoed in Israel
     # and the second day of Yom Tov outside it.
     sunday = at(2026, 9, 27, 12)
-    outside = Settings(31.778, 35.235, TZ, True, 40, 0)
+    outside = Settings(31.778, 35.235, 0, TZ, True, 40, 0)
     assert not snapshot(JERUSALEM, sunday).in_effect
     assert snapshot(outside, sunday).in_effect
+
+
+def test_elevation_is_used_and_not_left_to_hdates_default():
+    # 7 November 2026 at sea level, matching core Jewish Calendar on a live install.
+    moment = at(2026, 11, 7, 12)
+    sea = snapshot(Settings(31.7851118, 35.2141063, 0, TZ, False, 40, 0), moment)
+    high = snapshot(Settings(31.7851118, 35.2141063, 754, TZ, False, 40, 0), moment)
+    assert sea.zmanim["shkia"] == at(2026, 11, 7, 16, 45)
+    assert sea.next_havdalah == at(2026, 11, 7, 17, 23)
+    assert high.zmanim["shkia"] == at(2026, 11, 7, 16, 48)

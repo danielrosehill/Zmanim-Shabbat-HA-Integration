@@ -16,6 +16,7 @@ class Settings:
 
     latitude: float
     longitude: float
+    elevation: float
     timezone: dt.tzinfo
     diaspora: bool
     candle_lighting_minutes: int
@@ -39,6 +40,8 @@ def _zmanim(settings: Settings, date: dt.date) -> Zmanim:
             name="Home",
             latitude=settings.latitude,
             longitude=settings.longitude,
+            # Always set this: hdate's own default is Jerusalem's 754 m.
+            altitude=settings.elevation,
             timezone=settings.timezone,
             diaspora=settings.diaspora,
         ),

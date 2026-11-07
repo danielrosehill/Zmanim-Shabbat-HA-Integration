@@ -20,6 +20,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ZmanimConfigEntry) -> bo
     settings = Settings(
         latitude=hass.config.latitude,
         longitude=hass.config.longitude,
+        elevation=hass.config.elevation,
         timezone=dt_util.get_default_time_zone(),
         diaspora=entry.options[CONF_DIASPORA],
         candle_lighting_minutes=int(entry.options[CONF_CANDLE_LIGHTING_MINUTES]),

@@ -31,13 +31,13 @@ Set these during setup, and change them later under Configure.
 - **Outside Israel:** two-day Yom Tov. Defaults to on unless Home Assistant's country is Israel.
 - **Zmanim to show:** deselecting one removes its sensor.
 
-Location and time zone come from Home Assistant. After changing them, reload the integration.
+Location, elevation and time zone come from Home Assistant. Elevation changes sunrise and sunset by a few minutes. After changing any of them, reload the integration.
 
 ## Test status
 
 Date: 2026-11-07. `uv sync --python 3.13 && .venv/bin/pytest` passes on Home Assistant 2026.2.3 with hdate 1.2.2.
 
-Not yet run on a live Home Assistant installation.
+Installed on a live Home Assistant 2026.11.0 on 2026-11-07. Sunset and havdalah match Jewish Calendar at the same location and elevation. A live candle lighting and havdalah transition has not been watched yet.
 
 ## License
 

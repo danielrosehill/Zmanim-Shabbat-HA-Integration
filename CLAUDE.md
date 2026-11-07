@@ -11,7 +11,7 @@ Release tier: small (`v1.0`, `v1.1`, ...). `manifest.json` `version` follows it.
 - `calc.py` has no Home Assistant imports. Keep date logic there, where it can be tested alone.
 - The coordinator has no polling interval. It recalculates at the earliest of midnight, next candle lighting and next havdalah.
 - "Next" means strictly after now. Core derives it from today's date, so its `upcoming` sensors show a past time until midnight on Saturday night.
-- Location comes from `hass.config`, not the config entry. hdate 1.2.2's zmanim ignore altitude, so there is no elevation setting.
+- Location and elevation come from `hass.config`, not the config entry. Elevation must always be passed: hdate 1.2.2 uses it through astral, and `Location` defaults to 754 m (Jerusalem), which moved sunset 3 minutes and havdalah 4 at sea level. First install (v1.0, 2026-11-07) shipped that bug; it showed up only by comparing live values with core `jewish_calendar`, because the tests had no absolute times. Elevation 0 and 754 give different times, so changing it changes candle lighting too.
 - `hdate` is a range, not a pin, so this can't fight the version core `jewish_calendar` pins (1.2.2 in HA 2026.11.0).
 - Only `translations/en.json` exists; a `strings.json` is unused by custom integrations.
 
