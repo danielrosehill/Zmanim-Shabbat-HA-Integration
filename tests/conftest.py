@@ -3,13 +3,12 @@
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.zmanim_shabbat.const import DEFAULT_ZMANIM, DOMAIN
+from custom_components.zmanim_shabbat.const import DOMAIN
 
 OPTIONS = {
     "diaspora": False,
     "candle_lighting_minutes": 40,
     "havdalah_minutes": 0,
-    "zmanim": DEFAULT_ZMANIM,
 }
 
 

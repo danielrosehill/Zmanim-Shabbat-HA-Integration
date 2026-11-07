@@ -1,0 +1,181 @@
+{
+  "config": {
+    "abort": {
+      "single_instance_allowed": "כבר מוגדר."
+    },
+    "step": {
+      "user": {
+        "title": "זמנים ושבת",
+        "data": {
+          "candle_lighting_minutes": "הדלקת נרות, דקות לפני השקיעה",
+          "havdalah_minutes": "הבדלה, דקות אחרי השקיעה",
+          "diaspora": "מחוץ לישראל (יום טוב שני)"
+        },
+        "data_description": {
+          "candle_lighting_minutes": "מתחיל ב-40 אם הבית באזור ירושלים, אחרת 18. אפשר לשנות לפי המנהג שלך.",
+          "havdalah_minutes": "0 משתמש בצאת הכוכבים במקום זמן קבוע."
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "זמנים ושבת",
+        "data": {
+          "candle_lighting_minutes": "הדלקת נרות, דקות לפני השקיעה",
+          "havdalah_minutes": "הבדלה, דקות אחרי השקיעה",
+          "diaspora": "מחוץ לישראל (יום טוב שני)"
+        },
+        "data_description": {
+          "candle_lighting_minutes": "מתחיל ב-40 אם הבית באזור ירושלים, אחרת 18. אפשר לשנות לפי המנהג שלך.",
+          "havdalah_minutes": "0 משתמש בצאת הכוכבים במקום זמן קבוע."
+        }
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "in_effect": {
+        "name": "בתוקף",
+        "state_attributes": {
+          "occasion": {
+            "name": "מועד",
+            "state": {
+              "none": "אין",
+              "shabbat": "שבת",
+              "yom_tov": "יום טוב",
+              "shabbat_yom_tov": "שבת ויום טוב"
+            }
+          }
+        }
+      },
+      "chol_hamoed": {
+        "name": "חול המועד"
+      },
+      "fast_day": {
+        "name": "יום צום"
+      }
+    },
+    "sensor": {
+      "alot_hashachar": {
+        "name": "עלות השחר"
+      },
+      "talit_and_tefillin": {
+        "name": "זמן טלית ותפילין"
+      },
+      "netz_hachama": {
+        "name": "הנץ החמה"
+      },
+      "sof_zman_shema": {
+        "name": "סוף זמן קריאת שמע"
+      },
+      "sof_zman_tefilla": {
+        "name": "סוף זמן תפילה"
+      },
+      "chatzot_hayom": {
+        "name": "חצות היום"
+      },
+      "mincha_gedola": {
+        "name": "מנחה גדולה"
+      },
+      "mincha_ketana": {
+        "name": "מנחה קטנה"
+      },
+      "plag_hamincha": {
+        "name": "פלג המנחה"
+      },
+      "shkia": {
+        "name": "שקיעה"
+      },
+      "tzeit_hakochavim": {
+        "name": "צאת הכוכבים"
+      },
+      "chatzot_halayla": {
+        "name": "חצות הלילה"
+      },
+      "next_candle_lighting": {
+        "name": "הדלקת הנרות הבאה"
+      },
+      "next_havdalah": {
+        "name": "ההבדלה הבאה"
+      },
+      "parasha": {
+        "name": "פרשת השבוע",
+        "state": {
+          "none": "אין פרשה (קריאת חג)",
+          "bereshit": "בראשית",
+          "noach": "נח",
+          "lech_lecha": "לך לך",
+          "vayera": "וירא",
+          "chayei_sara": "חיי שרה",
+          "toldot": "תולדות",
+          "vayetzei": "ויצא",
+          "vayishlach": "וישלח",
+          "vayeshev": "וישב",
+          "miketz": "מקץ",
+          "vayigash": "ויגש",
+          "vayechi": "ויחי",
+          "shemot": "שמות",
+          "vaera": "וארא",
+          "bo": "בא",
+          "beshalach": "בשלח",
+          "yitro": "יתרו",
+          "mishpatim": "משפטים",
+          "terumah": "תרומה",
+          "tetzaveh": "תצוה",
+          "ki_tisa": "כי תשא",
+          "vayakhel": "ויקהל",
+          "pekudei": "פקודי",
+          "vayikra": "ויקרא",
+          "tzav": "צו",
+          "shmini": "שמיני",
+          "tazria": "תזריע",
+          "metzora": "מצורע",
+          "achrei_mot": "אחרי מות",
+          "kedoshim": "קדושים",
+          "emor": "אמור",
+          "behar": "בהר",
+          "bechukotai": "בחוקותי",
+          "bamidbar": "במדבר",
+          "nasso": "נשא",
+          "behaalotcha": "בהעלותך",
+          "shlach": "שלח",
+          "korach": "קרח",
+          "chukat": "חוקת",
+          "balak": "בלק",
+          "pinchas": "פינחס",
+          "matot": "מטות",
+          "masei": "מסעי",
+          "devarim": "דברים",
+          "vaetchanan": "ואתחנן",
+          "eikev": "עקב",
+          "reeh": "ראה",
+          "shoftim": "שופטים",
+          "ki_teitzei": "כי תצא",
+          "ki_tavo": "כי תבוא",
+          "nitzavim": "ניצבים",
+          "vayeilech": "וילך",
+          "haazinu": "האזינו",
+          "vezot_habracha": "וזאת הברכה",
+          "vayakhel_pekudei": "ויקהל-פקודי",
+          "tazria_metzora": "תזריע-מצורע",
+          "achrei_mot_kedoshim": "אחרי מות-קדושים",
+          "behar_bechukotai": "בהר-בחוקותי",
+          "chukat_balak": "חוקת-בלק",
+          "matot_masei": "מטות-מסעי",
+          "nitzavim_vayeilech": "ניצבים-וילך"
+        }
+      },
+      "next_fast_start": {
+        "name": "תחילת הצום הבא"
+      },
+      "next_fast_end": {
+        "name": "סוף הצום הבא"
+      },
+      "hebrew_date": {
+        "name": "תאריך עברי"
+      }
+    }
+  }
+}

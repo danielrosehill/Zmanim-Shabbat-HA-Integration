@@ -1,0 +1,123 @@
+blueprint:
+  name: Shabbat and Yom Tov announcement
+  description: >-
+    Speak a message on your speakers when Shabbat or Yom Tov starts and ends,
+    in English or Hebrew. Needs the Zmanim and Shabbat integration and a text
+    to speech engine that can speak the chosen language.
+  domain: automation
+  source_url: https://github.com/danielrosehill/Zmanim-Shabbat-HA-Integration/blob/main/blueprints/automation/zmanim_shabbat/announce.yaml
+  input:
+    in_effect:
+      name: In effect sensor
+      default: binary_sensor.shabbat_and_yom_tov_in_effect
+      selector:
+        entity:
+          filter:
+            - integration: zmanim_shabbat
+              domain: binary_sensor
+    speakers:
+      name: Speakers
+      selector:
+        entity:
+          multiple: true
+          filter:
+            - domain: media_player
+    tts_engine:
+      name: Text to speech engine
+      selector:
+        entity:
+          filter:
+            - domain: tts
+    message_language:
+      name: Message language
+      default: en
+      selector:
+        select:
+          options:
+            - label: English
+              value: en
+            - label: Hebrew
+              value: he
+    tts_language:
+      name: Engine language code
+      description: Optional. Leave empty for the engine's default, or set the code it expects, such as he-IL.
+      default: ""
+      selector:
+        text:
+    announce_start:
+      name: Announce the start
+      default: true
+      selector:
+        boolean:
+    announce_end:
+      name: Announce the end
+      default: true
+      selector:
+        boolean:
+
+triggers:
+  - trigger: state
+    entity_id: !input in_effect
+    from: "off"
+    to: "on"
+    id: start
+  - trigger: state
+    entity_id: !input in_effect
+    from: "on"
+    to: "off"
+    id: end
+
+variables:
+  message_language: !input message_language
+  tts_language: !input tts_language
+  announce_start: !input announce_start
+  announce_end: !input announce_end
+  # At the end the sensor has already cleared, so read the state it left.
+  occasion: >-
+    {{ (trigger.to_state if trigger.id == 'start' else trigger.from_state).attributes.occasion }}
+  messages:
+    en:
+      start:
+        shabbat: Shabbat has started. Shabbat Shalom.
+        yom_tov: Yom Tov has started. Chag Sameach.
+        shabbat_yom_tov: Shabbat and Yom Tov have started. Shabbat Shalom and Chag Sameach.
+      end:
+        shabbat: Shabbat is over. Shavua Tov.
+        yom_tov: Yom Tov is over.
+        shabbat_yom_tov: Shabbat and Yom Tov are over. Shavua Tov.
+    he:
+      start:
+        shabbat: נכנסה השבת. שבת שלום.
+        yom_tov: נכנס החג. חג שמח.
+        shabbat_yom_tov: נכנסו השבת והחג. שבת שלום וחג שמח.
+      end:
+        shabbat: יצאה השבת. שבוע טוב.
+        yom_tov: יצא החג.
+        shabbat_yom_tov: יצאו השבת והחג. שבוע טוב.
+  message: "{{ messages[message_language][trigger.id][occasion] }}"
+
+conditions:
+  - condition: template
+    value_template: "{{ announce_start if trigger.id == 'start' else announce_end }}"
+
+actions:
+  - if:
+      - condition: template
+        value_template: "{{ tts_language | length > 0 }}"
+    then:
+      - action: tts.speak
+        target:
+          entity_id: !input tts_engine
+        data:
+          media_player_entity_id: !input speakers
+          message: "{{ message }}"
+          language: "{{ tts_language }}"
+    else:
+      - action: tts.speak
+        target:
+          entity_id: !input tts_engine
+        data:
+          media_player_entity_id: !input speakers
+          message: "{{ message }}"
+
+mode: single

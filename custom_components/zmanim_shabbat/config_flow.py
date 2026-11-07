@@ -16,19 +16,14 @@ from homeassistant.helpers.selector import (
     NumberSelector,
     NumberSelectorConfig,
     NumberSelectorMode,
-    SelectSelector,
-    SelectSelectorConfig,
 )
 
+from .calc import default_candle_lighting_minutes
 from .const import (
-    ALL_ZMANIM,
     CONF_CANDLE_LIGHTING_MINUTES,
     CONF_DIASPORA,
     CONF_HAVDALAH_MINUTES,
-    CONF_ZMANIM,
-    DEFAULT_CANDLE_LIGHTING_MINUTES,
     DEFAULT_HAVDALAH_MINUTES,
-    DEFAULT_ZMANIM,
     DOMAIN,
 )
 
@@ -48,9 +43,10 @@ def _minutes(maximum: int) -> NumberSelector:
 def _schema(hass: HomeAssistant, current: dict[str, Any]) -> vol.Schema:
     defaults = {
         CONF_DIASPORA: hass.config.country != "IL",
-        CONF_CANDLE_LIGHTING_MINUTES: DEFAULT_CANDLE_LIGHTING_MINUTES,
+        CONF_CANDLE_LIGHTING_MINUTES: default_candle_lighting_minutes(
+            hass.config.latitude, hass.config.longitude
+        ),
         CONF_HAVDALAH_MINUTES: DEFAULT_HAVDALAH_MINUTES,
-        CONF_ZMANIM: DEFAULT_ZMANIM,
     } | current
     return vol.Schema(
         {
@@ -62,11 +58,6 @@ def _schema(hass: HomeAssistant, current: dict[str, Any]) -> vol.Schema:
                 CONF_HAVDALAH_MINUTES, default=defaults[CONF_HAVDALAH_MINUTES]
             ): _minutes(120),
             vol.Required(CONF_DIASPORA, default=defaults[CONF_DIASPORA]): BooleanSelector(),
-            vol.Required(CONF_ZMANIM, default=defaults[CONF_ZMANIM]): SelectSelector(
-                SelectSelectorConfig(
-                    options=list(ALL_ZMANIM), multiple=True, translation_key="zmanim"
-                )
-            ),
         }
     )
 

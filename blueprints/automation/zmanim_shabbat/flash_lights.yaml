@@ -1,0 +1,98 @@
+blueprint:
+  name: Shabbat and Yom Tov light flash
+  description: >-
+    Flash lights on and off when Shabbat or Yom Tov starts and ends, then put
+    each light back as it was. Needs the Zmanim and Shabbat integration.
+  domain: automation
+  source_url: https://github.com/danielrosehill/Zmanim-Shabbat-HA-Integration/blob/main/blueprints/automation/zmanim_shabbat/flash_lights.yaml
+  input:
+    in_effect:
+      name: In effect sensor
+      default: binary_sensor.shabbat_and_yom_tov_in_effect
+      selector:
+        entity:
+          filter:
+            - integration: zmanim_shabbat
+              domain: binary_sensor
+    lights:
+      name: Lights
+      description: List individual lights, not a group, so each one can be restored.
+      selector:
+        entity:
+          multiple: true
+          filter:
+            - domain: light
+    flashes:
+      name: Number of flashes
+      default: 3
+      selector:
+        number:
+          min: 1
+          max: 10
+          mode: box
+    seconds:
+      name: Seconds on and seconds off
+      default: 2
+      selector:
+        number:
+          min: 1
+          max: 10
+          unit_of_measurement: s
+          mode: box
+    flash_at_start:
+      name: Flash at the start
+      default: true
+      selector:
+        boolean:
+    flash_at_end:
+      name: Flash at the end
+      default: true
+      selector:
+        boolean:
+
+triggers:
+  - trigger: state
+    entity_id: !input in_effect
+    from: "off"
+    to: "on"
+    id: start
+  - trigger: state
+    entity_id: !input in_effect
+    from: "on"
+    to: "off"
+    id: end
+
+variables:
+  flash_at_start: !input flash_at_start
+  flash_at_end: !input flash_at_end
+  seconds: !input seconds
+  scene_id: "zmanim_shabbat_flash_{{ this.attributes.id | default('snapshot') | slugify }}"
+
+conditions:
+  - condition: template
+    value_template: "{{ flash_at_start if trigger.id == 'start' else flash_at_end }}"
+
+actions:
+  - action: scene.create
+    data:
+      scene_id: "{{ scene_id }}"
+      snapshot_entities: !input lights
+  - repeat:
+      count: !input flashes
+      sequence:
+        - action: light.turn_on
+          target:
+            entity_id: !input lights
+        - delay:
+            seconds: "{{ seconds }}"
+        - action: light.turn_off
+          target:
+            entity_id: !input lights
+        - delay:
+            seconds: "{{ seconds }}"
+  - action: scene.turn_on
+    target:
+      entity_id: "scene.{{ scene_id }}"
+
+mode: single
+max_exceeded: silent

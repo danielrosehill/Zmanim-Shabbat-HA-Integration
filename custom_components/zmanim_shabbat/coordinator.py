@@ -1,4 +1,4 @@
-"""Recalculate at midnight, candle lighting and havdalah, and at no other time."""
+"""Recalculate at midnight and at the next change in the snapshot, and at no other time."""
 
 import datetime as dt
 import logging
@@ -29,13 +29,13 @@ class ZmanimCoordinator(DataUpdateCoordinator[Snapshot]):
 
     async def _async_update_data(self) -> Snapshot:
         now = dt_util.now()
-        data = snapshot(self.settings, now)
+        data = await self.hass.async_add_executor_job(snapshot, self.settings, now)
         midnight = dt_util.start_of_local_day(now.date() + dt.timedelta(days=1))
         self.async_stop()
         self._unsub = async_track_point_in_time(
             self.hass,
             self._async_tick,
-            min(data.next_candle_lighting, data.next_havdalah, midnight),
+            min(data.next_update, midnight),
         )
         return data
 

@@ -1,9 +1,18 @@
 """Calculations, checked against the Jerusalem calendar."""
 
 import datetime as dt
+import json
+from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from custom_components.zmanim_shabbat.calc import Settings, snapshot
+from hdate.parasha import Parasha
+
+from custom_components.zmanim_shabbat.calc import (
+    Settings,
+    default_candle_lighting_minutes,
+    format_hebrew_date,
+    snapshot,
+)
 
 TZ = ZoneInfo("Asia/Jerusalem")
 JERUSALEM = Settings(31.778, 35.235, 0, TZ, False, 40, 0)
@@ -70,3 +79,99 @@ def test_elevation_is_used_and_not_left_to_hdates_default():
     assert sea.zmanim["shkia"] == at(2026, 11, 7, 16, 45)
     assert sea.next_havdalah == at(2026, 11, 7, 17, 23)
     assert high.zmanim["shkia"] == at(2026, 11, 7, 16, 48)
+
+
+def test_jerusalem_area_defaults_to_40():
+    assert default_candle_lighting_minutes(31.785, 35.214) == 40  # City centre
+    assert default_candle_lighting_minutes(31.797, 35.103) == 40  # Mevaseret Zion
+    assert default_candle_lighting_minutes(32.085, 34.782) == 18  # Tel Aviv
+    assert default_candle_lighting_minutes(31.747, 34.988) == 18  # Beit Shemesh
+    assert default_candle_lighting_minutes(40.713, -74.006) == 18  # New York
+
+
+def test_occasion_names_what_is_in_effect():
+    assert snapshot(JERUSALEM, at(2026, 11, 7, 12)).occasion == "shabbat"
+    assert snapshot(JERUSALEM, at(2026, 11, 9, 12)).occasion == "none"
+    # Friday night counts as the Shabbat it starts.
+    assert snapshot(JERUSALEM, at(2026, 11, 13, 20)).occasion == "shabbat"
+    # Rosh Hashana: Shabbat with Yom Tov, then Yom Tov alone on Sunday.
+    assert snapshot(JERUSALEM, at(2026, 9, 12, 12)).occasion == "shabbat_yom_tov"
+    assert snapshot(JERUSALEM, at(2026, 9, 13, 12)).occasion == "yom_tov"
+
+
+def test_every_parasha_has_a_name_in_both_languages():
+    root = Path("custom_components/zmanim_shabbat/translations")
+    for language in ("en", "he"):
+        names = json.loads((root / f"{language}.json").read_text())
+        states = names["entity"]["sensor"]["parasha"]["state"]
+        assert set(states) == {parasha.name.lower() for parasha in Parasha}
+
+
+def test_occasion_at_the_moments_announcements_read_it():
+    # Candle lighting is before sunset, on a day that is not itself holy.
+    # Pesach 5787 is Thursday 22 April 2027, Yom Kippur Monday 21 September 2026.
+    for erev in (at(2027, 4, 21, 9), at(2026, 9, 20, 9)):
+        candles = snapshot(JERUSALEM, erev).next_candle_lighting
+        assert snapshot(JERUSALEM, candles).in_effect
+        assert snapshot(JERUSALEM, candles).occasion == "yom_tov"
+    friday = snapshot(JERUSALEM, at(2026, 11, 13, 9)).next_candle_lighting
+    assert snapshot(JERUSALEM, friday).occasion == "shabbat"
+    # Between sunset and havdalah on the last day, with nothing holy tomorrow.
+    assert snapshot(JERUSALEM, at(2027, 4, 22, 19, 15)).occasion == "yom_tov"
+    assert snapshot(JERUSALEM, at(2026, 11, 14, 16, 50)).occasion == "shabbat"
+
+
+def test_minor_fast_runs_from_alot_to_fast_tzeit():
+    # Tzom Gedaliah 5787 is Monday 14 September 2026.
+    noon = snapshot(JERUSALEM, at(2026, 9, 14, 12))
+    assert noon.fast_day
+    assert noon.next_fast_end.date() == dt.date(2026, 9, 14)
+    assert snapshot(JERUSALEM, at(2026, 9, 14, 3)).next_fast_start.date() == dt.date(2026, 9, 14)
+    assert not snapshot(JERUSALEM, at(2026, 9, 14, 3)).fast_day
+    assert not snapshot(JERUSALEM, at(2026, 9, 14, 21)).fast_day
+
+
+def test_tisha_bav_starts_the_evening_before():
+    # Tisha B'Av 5787 is Thursday 12 August 2027.
+    assert not snapshot(JERUSALEM, at(2027, 8, 11, 18)).fast_day
+    assert snapshot(JERUSALEM, at(2027, 8, 11, 21)).fast_day
+    assert snapshot(JERUSALEM, at(2027, 8, 12, 12)).fast_day
+
+
+def test_yom_kippur_is_a_fast_ending_at_havdalah():
+    # Yom Kippur 5787 is Monday 21 September 2026.
+    assert snapshot(JERUSALEM, at(2026, 9, 20, 21)).fast_day
+    day = snapshot(JERUSALEM, at(2026, 9, 21, 12))
+    assert day.fast_day
+    assert day.next_fast_end == day.next_havdalah
+
+
+def test_fast_lookups_never_run_out_over_a_year():
+    for days in range(0, 400, 3):
+        when = at(2026, 9, 1, 12) + dt.timedelta(days=days)
+        result = snapshot(JERUSALEM, when)
+        assert result.next_fast_start > when
+        assert result.next_fast_end > when
+
+
+def test_chol_hamoed():
+    # Sukkot 5787: Yom Tov Saturday 26 September, Chol HaMoed to Friday 2 October.
+    assert not snapshot(JERUSALEM, at(2026, 9, 26, 12)).chol_hamoed
+    assert snapshot(JERUSALEM, at(2026, 9, 27, 12)).chol_hamoed
+    # Hoshana Raba counts, though hdate types it as erev Yom Tov.
+    assert snapshot(JERUSALEM, at(2026, 10, 2, 12)).chol_hamoed
+    assert not snapshot(JERUSALEM, at(2026, 10, 2, 20)).chol_hamoed
+    # Shabbat Chol HaMoed counts. Pesach 5787 is Thursday 22 April 2027.
+    assert snapshot(JERUSALEM, at(2027, 4, 24, 12)).chol_hamoed
+    # The last day counts, though hdate types it as erev Yom Tov, until candles.
+    assert snapshot(JERUSALEM, at(2027, 4, 27, 12)).chol_hamoed
+    assert not snapshot(JERUSALEM, at(2027, 4, 27, 20)).chol_hamoed
+
+
+def test_hebrew_date_changes_at_sunset_and_formats_in_both_languages():
+    noon = snapshot(JERUSALEM, at(2026, 11, 9, 12)).hebrew_date
+    night = snapshot(JERUSALEM, at(2026, 11, 9, 20)).hebrew_date
+    assert night.day == noon.day + 1
+    assert format_hebrew_date(noon, "en") == "29 Cheshvan 5787"
+    assert format_hebrew_date(noon, "he").endswith('בחשוון תשפ"ז')
+    assert format_hebrew_date(noon, "fr") == "29 Cheshvan 5787"

@@ -2,12 +2,15 @@
 
 import datetime as dt
 
+from hdate.parasha import Parasha
+
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
-from .const import CONF_ZMANIM
+from .calc import format_hebrew_date
+from .const import HEBREW_DATE, SHABBAT_ENTITIES, ZMANIM
 from .coordinator import ZmanimConfigEntry
 from .entity import DEVICE_SHABBAT, DEVICE_ZMANIM, ZmanimShabbatEntity
 
@@ -19,11 +22,9 @@ async def async_setup_entry(
     entry: ZmanimConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
-    """Add the sensors, and drop any zman no longer selected."""
-    selected = entry.options[CONF_ZMANIM]
-    keep = {f"{entry.entry_id}-{key}" for key in selected} | {
-        f"{entry.entry_id}-{key}"
-        for key in ("in_effect", "next_candle_lighting", "next_havdalah")
+    """Add the sensors, and drop any left by an older zmanim list."""
+    keep = {
+        f"{entry.entry_id}-{key}" for key in (*ZMANIM, HEBREW_DATE, *SHABBAT_ENTITIES)
     }
     registry = er.async_get(hass)
     for item in er.async_entries_for_config_entry(registry, entry.entry_id):
@@ -32,7 +33,11 @@ async def async_setup_entry(
 
     async_add_entities(
         [
-            *(ZmanSensor(entry, DEVICE_ZMANIM, key) for key in selected),
+            *(ZmanSensor(entry, DEVICE_ZMANIM, key) for key in ZMANIM),
+            HebrewDateSensor(entry, DEVICE_ZMANIM, HEBREW_DATE),
+            ParashaSensor(entry, DEVICE_SHABBAT, "parasha"),
+            NextFastStartSensor(entry, DEVICE_SHABBAT, "next_fast_start"),
+            NextFastEndSensor(entry, DEVICE_SHABBAT, "next_fast_end"),
             NextCandleLightingSensor(entry, DEVICE_SHABBAT, "next_candle_lighting"),
             NextHavdalahSensor(entry, DEVICE_SHABBAT, "next_havdalah"),
         ]
@@ -70,3 +75,50 @@ class NextHavdalahSensor(TimeSensor):
     def native_value(self) -> dt.datetime:
         """Return the time."""
         return self.coordinator.data.next_havdalah
+
+
+class NextFastStartSensor(TimeSensor):
+    """The next fast start still to come."""
+
+    @property
+    def native_value(self) -> dt.datetime:
+        """Return the time."""
+        return self.coordinator.data.next_fast_start
+
+
+class NextFastEndSensor(TimeSensor):
+    """The next fast end still to come."""
+
+    @property
+    def native_value(self) -> dt.datetime:
+        """Return the time."""
+        return self.coordinator.data.next_fast_end
+
+
+class HebrewDateSensor(ZmanimShabbatEntity, SensorEntity):
+    """Today's Hebrew date, which changes at sunset."""
+
+    @property
+    def native_value(self) -> str:
+        """Return the date in Home Assistant's language."""
+        return format_hebrew_date(
+            self.coordinator.data.hebrew_date, self.hass.config.language
+        )
+
+    @property
+    def extra_state_attributes(self) -> dict[str, int | str]:
+        """Return the parts, for use in automations."""
+        date = self.coordinator.data.hebrew_date
+        return {"day": date.day, "month": date.month.name.lower(), "year": date.year}
+
+
+class ParashaSensor(ZmanimShabbatEntity, SensorEntity):
+    """This week's Torah portion, named in translations/."""
+
+    _attr_device_class = SensorDeviceClass.ENUM
+    _attr_options = [parasha.name.lower() for parasha in Parasha]
+
+    @property
+    def native_value(self) -> str:
+        """Return the portion for the coming Shabbat."""
+        return self.coordinator.data.parasha

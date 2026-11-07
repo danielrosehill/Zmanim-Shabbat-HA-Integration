@@ -9,11 +9,10 @@
         "data": {
           "candle_lighting_minutes": "Candle lighting, minutes before sunset",
           "havdalah_minutes": "Havdalah, minutes after sunset",
-          "diaspora": "Outside Israel (two-day Yom Tov)",
-          "zmanim": "Zmanim to show"
+          "diaspora": "Outside Israel (two-day Yom Tov)"
         },
         "data_description": {
-          "candle_lighting_minutes": "18 is the common default. Many in Jerusalem use 40.",
+          "candle_lighting_minutes": "Starts at 40 if your home is in the Jerusalem area, otherwise 18. Change it to follow your own custom.",
           "havdalah_minutes": "0 uses three stars instead of a fixed offset."
         }
       }
@@ -26,44 +25,36 @@
         "data": {
           "candle_lighting_minutes": "Candle lighting, minutes before sunset",
           "havdalah_minutes": "Havdalah, minutes after sunset",
-          "diaspora": "Outside Israel (two-day Yom Tov)",
-          "zmanim": "Zmanim to show"
+          "diaspora": "Outside Israel (two-day Yom Tov)"
         },
         "data_description": {
-          "candle_lighting_minutes": "18 is the common default. Many in Jerusalem use 40.",
+          "candle_lighting_minutes": "Starts at 40 if your home is in the Jerusalem area, otherwise 18. Change it to follow your own custom.",
           "havdalah_minutes": "0 uses three stars instead of a fixed offset."
         }
-      }
-    }
-  },
-  "selector": {
-    "zmanim": {
-      "options": {
-        "alot_hashachar": "Alot HaShachar",
-        "talit_and_tefillin": "Talit and Tefillin",
-        "netz_hachama": "Netz HaChama",
-        "sof_zman_shema_mga": "Sof Zman Shema (MGA)",
-        "sof_zman_shema_gra": "Sof Zman Shema (GRA)",
-        "sof_zman_tfilla_mga": "Sof Zman Tefilla (MGA)",
-        "sof_zman_tfilla_gra": "Sof Zman Tefilla (GRA)",
-        "chatzot_hayom": "Chatzot",
-        "mincha_gedola": "Mincha Gedola",
-        "mincha_gedola_30min": "Mincha Gedola (30 min)",
-        "mincha_ketana": "Mincha Ketana",
-        "plag_hamincha": "Plag HaMincha",
-        "shkia": "Shkia",
-        "tset_hakohavim_tsom": "Tzeit HaKochavim (fast end)",
-        "tset_hakohavim_shabbat": "Tzeit HaKochavim (Shabbat)",
-        "tset_hakohavim": "Tzeit HaKochavim",
-        "tset_hakohavim_rabeinu_tam": "Tzeit HaKochavim (Rabbeinu Tam)",
-        "chatzot_halayla": "Chatzot HaLayla"
       }
     }
   },
   "entity": {
     "binary_sensor": {
       "in_effect": {
-        "name": "In effect"
+        "name": "In effect",
+        "state_attributes": {
+          "occasion": {
+            "name": "Occasion",
+            "state": {
+              "none": "None",
+              "shabbat": "Shabbat",
+              "yom_tov": "Yom Tov",
+              "shabbat_yom_tov": "Shabbat and Yom Tov"
+            }
+          }
+        }
+      },
+      "chol_hamoed": {
+        "name": "Chol HaMoed"
+      },
+      "fast_day": {
+        "name": "Fast day"
       }
     },
     "sensor": {
@@ -76,26 +67,17 @@
       "netz_hachama": {
         "name": "Netz HaChama"
       },
-      "sof_zman_shema_mga": {
-        "name": "Sof Zman Shema (MGA)"
+      "sof_zman_shema": {
+        "name": "Sof Zman Shema"
       },
-      "sof_zman_shema_gra": {
-        "name": "Sof Zman Shema (GRA)"
-      },
-      "sof_zman_tfilla_mga": {
-        "name": "Sof Zman Tefilla (MGA)"
-      },
-      "sof_zman_tfilla_gra": {
-        "name": "Sof Zman Tefilla (GRA)"
+      "sof_zman_tefilla": {
+        "name": "Sof Zman Tefilla"
       },
       "chatzot_hayom": {
         "name": "Chatzot"
       },
       "mincha_gedola": {
         "name": "Mincha Gedola"
-      },
-      "mincha_gedola_30min": {
-        "name": "Mincha Gedola (30 min)"
       },
       "mincha_ketana": {
         "name": "Mincha Ketana"
@@ -106,17 +88,8 @@
       "shkia": {
         "name": "Shkia"
       },
-      "tset_hakohavim_tsom": {
-        "name": "Tzeit HaKochavim (fast end)"
-      },
-      "tset_hakohavim_shabbat": {
-        "name": "Tzeit HaKochavim (Shabbat)"
-      },
-      "tset_hakohavim": {
+      "tzeit_hakochavim": {
         "name": "Tzeit HaKochavim"
-      },
-      "tset_hakohavim_rabeinu_tam": {
-        "name": "Tzeit HaKochavim (Rabbeinu Tam)"
       },
       "chatzot_halayla": {
         "name": "Chatzot HaLayla"
@@ -126,6 +99,82 @@
       },
       "next_havdalah": {
         "name": "Next havdalah"
+      },
+      "parasha": {
+        "name": "Parasha",
+        "state": {
+          "none": "No portion (holiday reading)",
+          "bereshit": "Bereshit",
+          "noach": "Noach",
+          "lech_lecha": "Lech Lecha",
+          "vayera": "Vayera",
+          "chayei_sara": "Chayei Sarah",
+          "toldot": "Toldot",
+          "vayetzei": "Vayetze",
+          "vayishlach": "Vayishlach",
+          "vayeshev": "Vayeshev",
+          "miketz": "Miketz",
+          "vayigash": "Vayigash",
+          "vayechi": "Vayechi",
+          "shemot": "Shemot",
+          "vaera": "Vaera",
+          "bo": "Bo",
+          "beshalach": "Beshalach",
+          "yitro": "Yitro",
+          "mishpatim": "Mishpatim",
+          "terumah": "Terumah",
+          "tetzaveh": "Tetzaveh",
+          "ki_tisa": "Ki Tisa",
+          "vayakhel": "Vayakhel",
+          "pekudei": "Pekudei",
+          "vayikra": "Vayikra",
+          "tzav": "Tzav",
+          "shmini": "Shemini",
+          "tazria": "Tazria",
+          "metzora": "Metzora",
+          "achrei_mot": "Acharei Mot",
+          "kedoshim": "Kedoshim",
+          "emor": "Emor",
+          "behar": "Behar",
+          "bechukotai": "Bechukotai",
+          "bamidbar": "Bamidbar",
+          "nasso": "Naso",
+          "behaalotcha": "Behaalotcha",
+          "shlach": "Shelach",
+          "korach": "Korach",
+          "chukat": "Chukat",
+          "balak": "Balak",
+          "pinchas": "Pinchas",
+          "matot": "Matot",
+          "masei": "Masei",
+          "devarim": "Devarim",
+          "vaetchanan": "Vaetchanan",
+          "eikev": "Ekev",
+          "reeh": "Re'eh",
+          "shoftim": "Shoftim",
+          "ki_teitzei": "Ki Tetze",
+          "ki_tavo": "Ki Tavo",
+          "nitzavim": "Nitzavim",
+          "vayeilech": "Vayelech",
+          "haazinu": "Haazinu",
+          "vezot_habracha": "Vezot Habracha",
+          "vayakhel_pekudei": "Vayakhel-Pekudei",
+          "tazria_metzora": "Tazria-Metzora",
+          "achrei_mot_kedoshim": "Acharei Mot-Kedoshim",
+          "behar_bechukotai": "Behar-Bechukotai",
+          "chukat_balak": "Chukat-Balak",
+          "matot_masei": "Matot-Masei",
+          "nitzavim_vayeilech": "Nitzavim-Vayelech"
+        }
+      },
+      "next_fast_start": {
+        "name": "Next fast start"
+      },
+      "next_fast_end": {
+        "name": "Next fast end"
+      },
+      "hebrew_date": {
+        "name": "Hebrew date"
       }
     }
   }
