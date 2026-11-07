@@ -44,6 +44,16 @@ blueprint:
       default: ""
       selector:
         text:
+    volume:
+      name: Volume
+      description: Set the speakers to this volume first. 0 leaves the volume as it is.
+      default: 0
+      selector:
+        number:
+          min: 0
+          max: 100
+          unit_of_measurement: "%"
+          mode: slider
     announce_start:
       name: Announce the start
       default: true
@@ -70,6 +80,7 @@ triggers:
 variables:
   message_language: !input message_language
   tts_language: !input tts_language
+  volume: !input volume
   announce_start: !input announce_start
   announce_end: !input announce_end
   # At the end the sensor has already cleared, so read the state it left.
@@ -101,6 +112,17 @@ conditions:
     value_template: "{{ announce_start if trigger.id == 'start' else announce_end }}"
 
 actions:
+  - if:
+      - condition: template
+        value_template: "{{ volume | int > 0 }}"
+    then:
+      # A speaker with no volume control should still speak.
+      - action: media_player.volume_set
+        continue_on_error: true
+        target:
+          entity_id: !input speakers
+        data:
+          volume_level: "{{ volume / 100 }}"
   - if:
       - condition: template
         value_template: "{{ tts_language | length > 0 }}"

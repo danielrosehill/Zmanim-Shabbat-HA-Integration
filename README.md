@@ -48,7 +48,7 @@ Fasts follow these times. Taanit Bechorot is not included.
 
 Both run when Shabbat or Yom Tov starts and ends. Import them under Settings → Automations & scenes → Blueprints → Import Blueprint, using these URLs:
 
-- **Announcement:** `https://github.com/danielrosehill/Zmanim-Shabbat-HA-Integration/blob/main/blueprints/automation/zmanim_shabbat/announce.yaml`. Choose your speakers, a text to speech engine and English or Hebrew. It names Shabbat or Yom Tov correctly. The engine must be able to speak the language you choose.
+- **Announcement:** `https://github.com/danielrosehill/Zmanim-Shabbat-HA-Integration/blob/main/blueprints/automation/zmanim_shabbat/announce.yaml`. Choose your speakers, a text to speech engine, English or Hebrew, and optionally a volume. It names Shabbat or Yom Tov correctly. The engine must be able to speak the language you choose.
 - **Light flash:** `https://github.com/danielrosehill/Zmanim-Shabbat-HA-Integration/blob/main/blueprints/automation/zmanim_shabbat/flash_lights.yaml`. Choose your lights. They flash three times, then each goes back to how it was. List individual lights rather than a group, so each one can be restored.
 
 ## Dashboard

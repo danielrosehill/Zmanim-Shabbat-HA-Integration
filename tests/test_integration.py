@@ -191,6 +191,24 @@ async def test_announce_blueprint_can_skip_the_start_and_set_a_language(hass):
     assert calls[0].data["language"] == "he-IL"
 
 
+async def test_announce_blueprint_sets_volume_only_when_asked(hass):
+    speak = async_mock_service(hass, "tts", "speak")
+    volume = async_mock_service(hass, "media_player", "volume_set")
+    states = [("off", {}), ("on", {"occasion": "shabbat"})]
+    await run_blueprint(hass, "announce", SPEAK | {"volume": 100}, states)
+    assert volume[0].data["volume_level"] == 1
+    assert volume[0].data["entity_id"] == ["media_player.home"]
+    assert len(speak) == 1
+
+
+async def test_announce_blueprint_leaves_volume_alone_by_default(hass):
+    async_mock_service(hass, "tts", "speak")
+    volume = async_mock_service(hass, "media_player", "volume_set")
+    states = [("off", {}), ("on", {"occasion": "shabbat"})]
+    await run_blueprint(hass, "announce", SPEAK, states)
+    assert not volume
+
+
 async def test_flash_blueprint_flashes_then_restores(hass):
     # No freezer here: frozen time would stop the blueprint's delays elapsing.
     created = async_mock_service(hass, "scene", "create")
