@@ -1,0 +1,14 @@
+[project]
+name = "zmanim-shabbat-ha-integration-dev"
+version = "0"
+requires-python = ">=3.13"
+
+[dependency-groups]
+dev = ["pytest-homeassistant-custom-component", "hdate[astral]>=1.2.2,<2"]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
